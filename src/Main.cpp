@@ -3,90 +3,87 @@
 
 #include <SDL2/SDL.h>
 
+#include "SDLGraphics.hpp"
+#include "color.hpp"
+#include "ray.hpp"
+#include "vec3.hpp"
+
+bool hit_sphere(const point3 &center, double radius, const ray &r)
+{
+    vec3 oc = center - r.origin();
+    auto a = dot(r.direction(), r.direction());
+    auto b = -2.0 * dot(r.direction(), oc);
+    auto c = dot(oc, oc) - radius * radius;
+    auto discriminant = b * b - 4 * a * c;
+    return (discriminant >= 0);
+}
+
+color ray_color(const ray &r)
+{
+    if (hit_sphere(point3(0, 0, -1), 0.5, r))
+        return color(1, 0, 0);
+
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+}
+
 int main()
 {
-    // Image dimensions
-    const int image_width = 256;
-    const int image_height = 256;
+    auto aspect_ratio = 16.0 / 9.0;
+    int image_width = 400;
 
-    // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << '\n';
-        return 1;
-    }
+    // Calculate the image height, and ensure that it's at least 1.
+    int image_height = int(image_width / aspect_ratio);
+    image_height = (image_height < 1) ? 1 : image_height;
 
-    // Create an SDL window
-    SDL_Window *window = SDL_CreateWindow("Gradient Image",
-                                          SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED,
-                                          image_width,
-                                          image_height,
-                                          SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
-        std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << '\n';
-        SDL_Quit();
-        return 1;
-    }
+    // Camera
 
-    // Create an SDL renderer
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == nullptr) {
-        std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << '\n';
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
+    auto focal_length = 1.0;
+    auto viewport_height = 2.0;
+    auto viewport_width = viewport_height * (double(image_width) / image_height);
+    auto camera_center = point3(0, 0, 0);
+
+    // Calculate the vectors across the horizontal and down the vertical viewport edges.
+    auto viewport_u = vec3(viewport_width, 0, 0);
+    auto viewport_v = vec3(0, -viewport_height, 0);
+
+    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+    auto pixel_delta_u = viewport_u / image_width;
+    auto pixel_delta_v = viewport_v / image_height;
+
+    // Calculate the location of the upper left pixel.
+    auto viewport_upper_left =
+        camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+    auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     // Create pixel data for the gradient image
     std::vector<Uint8> pixels(image_width * image_height * 3);  // RGB format
+    for (int j = 0; j < image_height; j++) {
+        std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+        for (int i = 0; i < image_width; i++) {
+            auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
+            auto ray_direction = pixel_center - camera_center;
+            ray r(camera_center, ray_direction);
 
-    for (int j = 0; j < image_height; ++j) {
-        for (int i = 0; i < image_width; ++i) {
-            auto r = static_cast<Uint8>(255.999 * (double(i) / (image_width - 1)));
-            auto g = static_cast<Uint8>(255.999 * (double(j) / (image_height - 1)));
-            auto b = 0;
+            color pixel_color = ray_color(r);
 
             int pixel_index = (j * image_width + i) * 3;
-            pixels[pixel_index] = r;
-            pixels[pixel_index + 1] = g;
-            pixels[pixel_index + 2] = b;
+            write_color(pixels, pixel_index, pixel_color);
         }
     }
 
-    // Create an SDL texture and upload the pixel data
-    SDL_Texture *texture = SDL_CreateTexture(
-        renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, image_width, image_height);
-    if (texture == nullptr) {
-        std::cerr << "Texture could not be created! SDL_Error: " << SDL_GetError() << '\n';
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+    SDLGraphics graphics;
+    if (!graphics.init("Raytracing C++", image_width, image_height)) {
         return 1;
     }
 
-    // Update the texture with the pixel data
-    SDL_UpdateTexture(texture, nullptr, pixels.data(), image_width * 3);
-
-    // Main loop to display the image
-    bool quit = false;
-    SDL_Event event;
-    while (!quit) {
-        while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT) {
-                quit = true;
-            }
-        }
-
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
-        SDL_RenderPresent(renderer);
+    bool running = true;
+    while (running) {
+        running = graphics.processEvents();
+        graphics.render(pixels, image_width, image_height);
     }
-
-    // Cleanup
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    graphics.cleanup();
 
     return 0;
 }
