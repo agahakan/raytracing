@@ -19,6 +19,6 @@ class ray
     point3 at(double t) const { return orig + t * dir; }
 
   private:
-    point3 orig;
-    vec3 dir;
+    point3 orig;  // Doit être défini dans vec3.hpp
+    vec3 dir;  // Doit être défini dans vec3.hpp
 };

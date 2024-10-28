@@ -1,4 +1,4 @@
-// src/rayimage/Image.hpp
+
 
 #pragma once
 
