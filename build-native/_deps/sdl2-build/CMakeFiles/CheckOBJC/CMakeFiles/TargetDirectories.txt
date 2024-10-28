@@ -1,0 +1,2 @@
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/CheckOBJC/CMakeFiles/edit_cache.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/CheckOBJC/CMakeFiles/rebuild_cache.dir

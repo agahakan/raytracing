@@ -1,0 +1,12 @@
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/CMakeFiles/RayTracer.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/CMakeFiles/run.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/CMakeFiles/edit_cache.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/CMakeFiles/rebuild_cache.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/sdl_headers_copy.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/SDL2main.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/SDL2.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/SDL2-static.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/SDL2_test.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/uninstall.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/edit_cache.dir
+/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-build/CMakeFiles/rebuild_cache.dir

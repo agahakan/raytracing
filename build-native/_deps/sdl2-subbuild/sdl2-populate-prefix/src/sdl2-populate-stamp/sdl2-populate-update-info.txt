@@ -1,0 +1,7 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The patch step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+command (connected)=/Users/G0512/homebrew/Cellar/cmake/3.30.5/bin/cmake;-Dcan_fetch=YES;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-subbuild/sdl2-populate-prefix/tmp/sdl2-populate-gitupdate.cmake
+command (disconnected)=/Users/G0512/homebrew/Cellar/cmake/3.30.5/bin/cmake;-Dcan_fetch=NO;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-subbuild/sdl2-populate-prefix/tmp/sdl2-populate-gitupdate.cmake
+work_dir=/Users/G0512/Dev/HETIC/RayTracer/raytracing/build-native/_deps/sdl2-src
