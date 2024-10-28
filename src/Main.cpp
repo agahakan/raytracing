@@ -1,8 +1,10 @@
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 #include <SDL2/SDL.h>
 
+#include "SDLGraphics.hpp"
 #include "camera.hpp"
 #include "hittable.hpp"
 #include "hittable_list.hpp"
@@ -50,34 +52,20 @@ int main()
     cam.samples_per_pixel = 100;
 
     cam.render(world);
+
+    std::vector<Uint8> pixels(cam.image_width * cam.image_height * 3);
+
+    SDLGraphics graphics;
+    if (!graphics.init("Raytracing C++", cam.image_width, cam.image_height)) {
+        return 1;
+    }
+
+    bool running = true;
+    while (running) {
+        running = graphics.processEvents();
+        graphics.render(pixels, cam.image_width, cam.image_height);
+    }
+    graphics.cleanup();
+
+    return 0;
 }
-
-//  // Create pixel data for the gradient image
-//     std::vector<Uint8> pixels(image_width * image_height * 3);  // RGB format
-//     for (int j = 0; j < image_height; j++) {
-//         std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-//         for (int i = 0; i < image_width; i++) {
-//             auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-//             auto ray_direction = pixel_center - camera_center;
-//             ray r(camera_center, ray_direction);
-
-//             color pixel_color = ray_color(r);
-
-//             int pixel_index = (j * image_width + i) * 3;
-//             write_color(pixels, pixel_index, pixel_color);
-//         }
-//     }
-
-//     SDLGraphics graphics;
-//     if (!graphics.init("Raytracing C++", image_width, image_height)) {
-//         return 1;
-//     }
-
-//     bool running = true;
-//     while (running) {
-//         running = graphics.processEvents();
-//         graphics.render(pixels, image_width, image_height);
-//     }
-//     graphics.cleanup();
-
-//     return 0;

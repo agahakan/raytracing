@@ -31,3 +31,23 @@ void write_color(std::vector<Uint8> &pixels, int index, const color &pixel_color
     pixels[index + 1] = static_cast<Uint8>(255.999 * pixel_color.y());
     pixels[index + 2] = static_cast<Uint8>(255.999 * pixel_color.z());
 }
+
+
+
+
+// Create pixel data for the gradient image
+
+
+// SDLGraphics graphics;
+// if (!graphics.init("Raytracing C++", image_width, image_height)) {
+//     return 1;
+// }
+
+// bool running = true;
+// while (running) {
+//     running = graphics.processEvents();
+//     graphics.render(pixels, image_width, image_height);
+// }
+// graphics.cleanup();
+
+// return 0;

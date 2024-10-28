@@ -14,6 +14,7 @@ class camera
   public:
     double aspect_ratio = 1.0;
     int image_width = 100;
+    int image_height = 100;
     int samples_per_pixel = 10;
 
     void render(const hittable &world)
@@ -22,7 +23,7 @@ class camera
 
         std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
         std::ofstream image_file("image.ppm");
-        
+
         image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; j++) {
