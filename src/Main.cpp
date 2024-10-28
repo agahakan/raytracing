@@ -53,17 +53,17 @@ int main()
 
     cam.render(world);
 
-    std::vector<Uint8> pixels(cam.image_width * cam.image_height * 3);
+    std::vector<Uint8> pixels(cam.image_width * cam.get_image_height() * 3);
 
     SDLGraphics graphics;
-    if (!graphics.init("Raytracing C++", cam.image_width, cam.image_height)) {
+    if (!graphics.init("Raytracing C++", cam.image_width, cam.get_image_height())) {
         return 1;
     }
 
     bool running = true;
     while (running) {
         running = graphics.processEvents();
-        graphics.render(pixels, cam.image_width, cam.image_height);
+        graphics.render(pixels, cam.image_width, cam.get_image_height());
     }
     graphics.cleanup();
 

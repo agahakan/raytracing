@@ -14,7 +14,6 @@ class camera
   public:
     double aspect_ratio = 1.0;
     int image_width = 100;
-    int image_height = 100;
     int samples_per_pixel = 10;
 
     void render(const hittable &world)
@@ -41,6 +40,8 @@ class camera
 
         std::clog << "\rDone.                 \n";
     }
+
+    int get_image_height() const { return image_height; };
 
   private:
     int image_height;
