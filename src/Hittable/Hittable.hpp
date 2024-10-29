@@ -1,15 +1,19 @@
 #pragma once
 
+#include <memory>
+
 #include "../Interval/Interval.hpp"
 #include "../Ray/Ray.hpp"
 
-class HitRecord
+class Material;
+
+struct HitRecord
 {
-  public:
-    point3 p;  // Point d'impact
-    Vec3 normal;  // Normale à la surface au point d'impact
-    double t;  // Distance du Rayon à l'impact
-    bool front_face;  // Indique si la normale est tournée vers l'extérieur
+    point3 p;
+    Vec3 normal;
+    double t;
+    bool front_face;
+    std::shared_ptr<Material> mat_ptr;
 
     void set_face_normal(const Ray &r, const Vec3 &outward_normal);
 };

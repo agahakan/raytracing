@@ -1,8 +1,16 @@
-#include "SphereMeshGenerator.hpp"
 #include <cmath>
 
-void generate_sphere_mesh(Mesh& mesh, const point3& center, double radius,
-                          int longitude_segments, int latitude_segments) {
+#include "SphereMeshGenerator.hpp"
+
+#include "../Material/Lambertian.hpp"
+
+void generate_sphere_mesh(Mesh &mesh,
+                          const point3 &center,
+                          double radius,
+                          int longitude_segments,
+                          int latitude_segments,
+                          std::shared_ptr<Material> mat_ptr)
+{
     std::vector<point3> vertices;
 
     for (int y = 0; y <= latitude_segments; ++y) {
@@ -35,11 +43,10 @@ void generate_sphere_mesh(Mesh& mesh, const point3& center, double radius,
             point3 v3 = vertices[second + 1];
 
             // First triangle
-            mesh.add_triangle(std::make_shared<Triangle>(v0, v1, v2));
+            mesh.add_triangle(std::make_shared<Triangle>(v0, v1, v2, mat_ptr));
 
             // Second triangle
-            mesh.add_triangle(std::make_shared<Triangle>(v2, v1, v3));
+            mesh.add_triangle(std::make_shared<Triangle>(v2, v1, v3, mat_ptr));
         }
     }
 }
-

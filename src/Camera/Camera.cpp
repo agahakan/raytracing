@@ -4,6 +4,8 @@
 
 #include "Camera.hpp"
 
+#include "../Material/Material.hpp"
+
 Camera::Camera(double aspect_ratio, int image_width, int samples_per_pixel)
     : aspect_ratio(aspect_ratio)
     , image_width(image_width)
@@ -50,7 +52,6 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 
     std::cout << "Starting render...\n";
 
-    // Use a thread pool to render scanlines in parallel
     const int num_threads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_threads);
 
@@ -119,10 +120,13 @@ color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
     HitRecord rec;
 
     if (world.hit(r, Interval(0.001, infinity), rec)) {
-        Vec3 direction = random_on_hemiSphere(rec.normal);
-        return 0.5 * Ray_color(Ray(rec.p, direction), world, depth + 1);
+        ScatterRecord srec;
+        if (rec.mat_ptr->scatter(r, rec, srec)) {
+            return srec.attenuation * Ray_color(srec.scattered, world, depth + 1);
+        } else {
+            return color(0, 0, 0);  // Absorbed
+        }
     }
-
     if (!sky_enabled || sky_type == SkyType::NONE) {
         return color(0, 0, 0);
     } else if (sky_type == SkyType::SOLID_COLOR) {
