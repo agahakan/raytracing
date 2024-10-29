@@ -1,7 +1,9 @@
 #include "Camera.hpp"
 
 Camera::Camera(double aspect_ratio, int image_width, int samples_per_pixel)
-    : aspect_ratio(aspect_ratio), image_width(image_width), samples_per_pixel(samples_per_pixel)
+    : aspect_ratio(aspect_ratio)
+    , image_width(image_width)
+    , samples_per_pixel(samples_per_pixel)
 {
     initialize();
 }
@@ -31,24 +33,49 @@ void Camera::initialize()
 
 void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 {
-    pixels.resize(image_width * image_height * 3);
+    std::cout << "Starting render...\n";
 
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    // Use a thread pool to render scanlines in parallel
+    const int num_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads(num_threads);
 
-    for (int j = 0; j < image_height; j++) {
-        std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-        for (int i = 0; i < image_width; i++) {
-            color pixel_color(0, 0, 0);
-            for (int sample = 0; sample < samples_per_pixel; sample++) {
-                Ray r = get_Ray(i, j);
-                pixel_color += Ray_color(r, world);
+    std::atomic<int> next_scanline(0);
+
+    auto render_scanlines = [&](int thread_id)
+    {
+        while (true) {
+            int j = next_scanline.fetch_add(1);
+            if (j >= image_height)
+                break;
+
+            for (int i = 0; i < image_width; i++) {
+                color pixel_color(0, 0, 0);
+                for (int sample = 0; sample < samples_per_pixel; sample++) {
+                    Ray r = get_Ray(i, j);
+                    pixel_color += Ray_color(r, world);
+                }
+                int index = ((image_height - 1 - j) * image_width + i) * 3;
+                write_color(pixels, index, pixel_samples_scale * pixel_color);
             }
-            int index = (j * image_width + i) * 3;
-            write_color(pixels, index, pixel_samples_scale * pixel_color);
+
+            // Optional: You can log progress here if desired
+            if (thread_id == 0 && j % 10 == 0) {
+                std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            }
         }
+    };
+
+    // Start threads
+    for (int t = 0; t < num_threads; ++t) {
+        threads[t] = std::thread(render_scanlines, t);
     }
 
-    std::clog << "\rDone.                 \n";
+    // Wait for all threads to finish
+    for (auto &thread : threads) {
+        thread.join();
+    }
+
+    std::clog << "\nRender complete.\n";
 }
 
 Ray Camera::get_Ray(int i, int j) const

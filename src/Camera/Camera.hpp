@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <thread>
 
 #include "../Backend/SDLGraphics.hpp"
 #include "../Color/Color.hpp"

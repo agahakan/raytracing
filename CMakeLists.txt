@@ -21,31 +21,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL2)
 
-file(GLOB PROJECT_SOURCES 
-    "src/Backend/*.cpp"
-    "src/Backend/*.hpp"
-    "src/Camera/*.cpp"
-    "src/Camera/*.hpp"
-    "src/Color/*.cpp"
-    "src/Color/*.hpp"
-    "src/Hittable/*.cpp"
-    "src/Hittable/*.hpp"
-    "src/HittableList/*.cpp"
-    "src/HittableList/*.hpp"
-    "src/Interval/*.cpp"
-    "src/Interval/*.hpp"
-    "src/Ray/*.cpp"
-    "src/Ray/*.hpp"
-    "src/Rtweekend/*.cpp"
-    "src/Rtweekend/*.hpp"
-    "src/Sphere/*.cpp"
-    "src/Sphere/*.hpp"
-    "src/Vec3/*.cpp"
-    "src/Vec3/*.hpp"
-    "src/Main.cpp"
-)
+# Recursively gather all .cpp and .hpp files under src/
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
 
-# Create the main executable
+# Create the main executable with the collected sources
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
