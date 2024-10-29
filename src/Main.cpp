@@ -2,11 +2,11 @@
 #include <iostream>
 #include <memory>
 
+#include "./Backend/SDLGraphics.hpp"
 #include "./Camera/Camera.hpp"
 #include "./Hittable/Hittable.hpp"
 #include "./HittableList/HittableList.hpp"
 #include "./Rtweekend/Rtweekend.hpp"
-#include "./Backend/SDLGraphics.hpp"
 #include "./Sphere/Sphere.hpp"
 
 double hit_Sphere(const point3 &center, double radius, const Ray &r)
@@ -49,19 +49,16 @@ int main()
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
 
-    cam.render(world);
-
-    std::vector<Uint8> pixels(cam.image_width * cam.get_image_height() * 3);
-
     SDLGraphics graphics;
-    if (!graphics.init("Raytracing C++", cam.image_width, cam.get_image_height())) {
+    if (!graphics.init("Raytracing C++", cam.image_width, 225)) {
         return 1;
     }
+
+    cam.render(world, graphics);
 
     bool running = true;
     while (running) {
         running = graphics.processEvents();
-        graphics.render(pixels, cam.image_width, cam.get_image_height());
     }
     graphics.cleanup();
 

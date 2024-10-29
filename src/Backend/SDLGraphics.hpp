@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 
 #include <SDL2/SDL.h>
@@ -13,6 +15,15 @@ class SDLGraphics : public Graphics
   public:
     bool init(const char *title, int width, int height) override
     {
+        std::cout << "Initializing SDLGraphics with width: " << width << " and height: " << height
+                  << '\n';
+
+        if (width <= 0 || height <= 0) {
+            std::cerr << "Invalid width or height! Width: " << width << ", Height: " << height
+                      << '\n';
+            return false;
+        }
+
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << '\n';
             return false;
@@ -43,7 +54,7 @@ class SDLGraphics : public Graphics
 
     void render(const std::vector<uint8_t> &pixels, int width, int height) override
     {
-        SDL_UpdateTexture(texture, nullptr, pixels.data(), width * 3);
+        SDL_UpdateTexture(texture, nullptr, pixels.data(), width * sizeof(Uint8) * 3);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);

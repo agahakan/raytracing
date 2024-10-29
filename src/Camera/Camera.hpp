@@ -4,21 +4,23 @@
 #include <iostream>
 #include <limits>
 
+#include "../Backend/SDLGraphics.hpp"
 #include "../Color/Color.hpp"
 #include "../Hittable/Hittable.hpp"
 #include "../Ray/Ray.hpp"
 #include "../Rtweekend/Rtweekend.hpp"
 
-class Camera {
-public:
+class Camera
+{
+  public:
     double aspect_ratio = 1.0;
     int image_width = 100;
     int samples_per_pixel = 10;
 
-    void render(const Hittable &world);
+    void render(const Hittable &world, SDLGraphics &graphics);
     int get_image_height() const;
 
-private:
+  private:
     int image_height;
     double pixel_samples_scale;
     point3 center;

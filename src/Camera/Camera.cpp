@@ -1,13 +1,12 @@
 #include "Camera.hpp"
 
-void Camera::render(const Hittable &world)
+void Camera::render(const Hittable &world, SDLGraphics &graphics)
 {
     initialize();
 
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-    std::ofstream image_file("image.ppm");
+    std::vector<Uint8> pixels(image_width * image_height * 3);
 
-    image_file << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
     for (int j = 0; j < image_height; j++) {
         std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
@@ -17,12 +16,14 @@ void Camera::render(const Hittable &world)
                 Ray r = get_Ray(i, j);
                 pixel_color += Ray_color(r, world);
             }
-            write_color(image_file, pixel_samples_scale * pixel_color);
-            write_color(std::cout, pixel_samples_scale * pixel_color);
+            int index = (j * image_width + i) * 3;
+            write_color(pixels, index, pixel_samples_scale * pixel_color);
         }
     }
 
     std::clog << "\rDone.                 \n";
+
+    graphics.render(pixels, image_width, image_height);
 }
 
 int Camera::get_image_height() const
