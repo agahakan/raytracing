@@ -81,7 +81,6 @@ Vec3 Vec3::random(double min, double max)
     return Vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 }
 
-// Vector Utility Functions
 std::ostream &operator<<(std::ostream &out, const Vec3 &v)
 {
     return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
@@ -147,7 +146,7 @@ Vec3 random_unit_vector()
 Vec3 random_on_hemiSphere(const Vec3 &normal)
 {
     Vec3 on_unit_Sphere = random_unit_vector();
-    if (dot(on_unit_Sphere, normal) > 0.0)  // In the same hemiSphere as the normal
+    if (dot(on_unit_Sphere, normal) > 0.0)
         return on_unit_Sphere;
     else
         return -on_unit_Sphere;

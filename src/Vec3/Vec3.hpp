@@ -32,10 +32,8 @@ class Vec3
     static Vec3 random(double min, double max);
 };
 
-// point3 is just an alias for Vec3, but useful for geometric clarity in the code.
 using point3 = Vec3;
 
-// Vector Utility Functions
 std::ostream &operator<<(std::ostream &out, const Vec3 &v);
 Vec3 operator+(const Vec3 &u, const Vec3 &v);
 Vec3 operator-(const Vec3 &u, const Vec3 &v);

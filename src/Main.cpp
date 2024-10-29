@@ -11,7 +11,7 @@
 #include "./Backend/SDLGraphics.hpp"
 #include "./Camera/Camera.hpp"
 #include "./Hittable/Hittable.hpp"
-#include "./HittableList/HittableList.hpp"
+#include "./Hittable/HittableList.hpp"
 #include "./Material/Lambertian.hpp"
 #include "./Mesh/Mesh.hpp"
 #include "./Mesh/SphereMeshGenerator.hpp"
@@ -49,7 +49,6 @@ int main()
 
     HittableList world;
 
-    // Define the sphere material with your desired color
     auto sphere_material = std::make_shared<Lambertian>(color(1.0, 0.0, 0.0));
     auto sphere_mesh = std::make_shared<Mesh>();
     generate_sphere_mesh(*sphere_mesh, point3(0, 0, -1), 0.5, 20, 20, sphere_material);
