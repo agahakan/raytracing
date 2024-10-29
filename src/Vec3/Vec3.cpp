@@ -14,10 +14,12 @@ double Vec3::x() const
 {
     return e[0];
 }
+
 double Vec3::y() const
 {
     return e[1];
 }
+
 double Vec3::z() const
 {
     return e[2];
@@ -27,10 +29,12 @@ Vec3 Vec3::operator-() const
 {
     return Vec3(-e[0], -e[1], -e[2]);
 }
+
 double Vec3::operator[](int i) const
 {
     return e[i];
 }
+
 double &Vec3::operator[](int i)
 {
     return e[i];

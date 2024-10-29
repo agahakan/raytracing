@@ -13,15 +13,17 @@ class Camera
 
     int image_width;
     int image_height;
-
-    void render(const Hittable &world, std::vector<Uint8> &pixels);
+    void render(const Hittable &world);
 
     // Methods to control the sky
     void set_sky_enabled(bool enabled);
     void set_sky_solid_color(const color &c);
     void set_sky_gradient(const color &bottom_color, const color &top_color);
 
+    const std::vector<uint8_t> &get_pixels() const;
+
   private:
+    std::vector<uint8_t> pixels;
     double aspect_ratio;
     int samples_per_pixel;
     double pixel_samples_scale;

@@ -1,7 +1,8 @@
 #include <atomic>
-#include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <thread>
+#include <vector>
 
 #include "Camera.hpp"
 
@@ -47,14 +48,11 @@ void Camera::initialize()
     pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 }
 
-void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
+void Camera::render(const Hittable &world)
 {
     pixels.resize(image_width * image_height * 3);
 
     std::cout << "Starting render...\n";
-
-    // Démarrer le chronomètre
-    auto start = std::chrono::high_resolution_clock::now();
 
     const int num_threads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_threads);
@@ -95,11 +93,7 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
         thread.join();
     }
 
-    // Arrêter le chronomètre
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-
-    std::clog << "\nRender complete in " << duration.count() << " seconds.\n";
+    std::clog << "\nRender complete.\n";
 }
 
 Ray Camera::get_Ray(int i, int j) const
@@ -168,3 +162,9 @@ void Camera::set_sky_gradient(const color &bottom_color, const color &top_color)
     sky_gradient_top = top_color;
     sky_enabled = true;
 }
+
+const std::vector<uint8_t> &Camera::get_pixels() const
+{
+    return pixels;
+}
+
