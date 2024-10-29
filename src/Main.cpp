@@ -16,7 +16,7 @@
 #include "./Mesh/Mesh.hpp"
 #include "./Mesh/SphereMeshGenerator.hpp"
 #include "./Mesh/Triangle.hpp"
-#include "./Rtweekend/Rtweekend.hpp"
+#include "./Utils/Utils.hpp"
 
 void printVertices(const aiMesh *mesh)
 {

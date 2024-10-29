@@ -15,7 +15,6 @@ class Camera
     int image_height;
     void render(const Hittable &world);
 
-    // Methods to control the sky
     void set_sky_enabled(bool enabled);
     void set_sky_solid_color(const color &c);
     void set_sky_gradient(const color &bottom_color, const color &top_color);
@@ -28,7 +27,6 @@ class Camera
     int samples_per_pixel;
     double pixel_samples_scale;
 
-    // Sky settings
     bool sky_enabled;
     enum class SkyType
     {
@@ -40,10 +38,8 @@ class Camera
     color sky_gradient_bottom;
     color sky_gradient_top;
 
-    // Maximum recursion depth
     int max_depth;
 
-    // Other private members
     point3 center;
     point3 pixel00_loc;
     Vec3 pixel_delta_u;

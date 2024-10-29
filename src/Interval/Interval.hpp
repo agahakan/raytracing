@@ -2,18 +2,20 @@
 
 #include <limits>
 
-class Interval {
-public:
+class Interval
+{
+  public:
     double min, max;
 
     Interval()
-        : min(+std::numeric_limits<double>::infinity()),
-          max(-std::numeric_limits<double>::infinity())
+        : min(+std::numeric_limits<double>::infinity())
+        , max(-std::numeric_limits<double>::infinity())
     {
-    }  // Default Interval is empty
+    }
 
     Interval(double min, double max)
-        : min(min), max(max)
+        : min(min)
+        , max(max)
     {
     }
 

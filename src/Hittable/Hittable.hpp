@@ -21,7 +21,5 @@ struct HitRecord
 class Hittable
 {
   public:
-    virtual bool hit(const Ray &r,
-                     Interval Ray_t,
-                     HitRecord &rec) const = 0;  // Méthode virtuelle pure
+    virtual bool hit(const Ray &r, Interval Ray_t, HitRecord &rec) const = 0;
 };

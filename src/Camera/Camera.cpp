@@ -54,6 +54,8 @@ void Camera::render(const Hittable &world)
 
     std::cout << "Starting render...\n";
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     const int num_threads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_threads);
 
@@ -70,30 +72,30 @@ void Camera::render(const Hittable &world)
                 color pixel_color(0, 0, 0);
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     Ray r = get_Ray(i, j);
-                    pixel_color += Ray_color(r, world, 0);  // Start with depth 0
+                    pixel_color += Ray_color(r, world, 0);
                 }
                 int index = ((image_height - 1 - j) * image_width + i) * 3;
                 write_color(pixels, index, pixel_samples_scale * pixel_color);
             }
 
-            // Optional progress logging
             if (thread_id == 0 && j % 10 == 0) {
                 std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             }
         }
     };
 
-    // Start threads
     for (int t = 0; t < num_threads; ++t) {
         threads[t] = std::thread(render_scanlines, t);
     }
 
-    // Wait for all threads to finish
     for (auto &thread : threads) {
         thread.join();
     }
 
-    std::clog << "\nRender complete.\n";
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::clog << "\nRender complete in " << duration.count() << " seconds.\n";
 }
 
 Ray Camera::get_Ray(int i, int j) const
@@ -116,7 +118,7 @@ Vec3 Camera::sample_square() const
 color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
 {
     if (depth >= max_depth) {
-        return color(0, 0, 0);  // Exceeded recursion depth
+        return color(0, 0, 0);
     }
 
     HitRecord rec;
@@ -126,7 +128,7 @@ color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
         if (rec.mat_ptr->scatter(r, rec, srec)) {
             return srec.attenuation * Ray_color(srec.scattered, world, depth + 1);
         } else {
-            return color(0, 0, 0);  // Absorbed
+            return color(0, 0, 0);
         }
     }
     if (!sky_enabled || sky_type == SkyType::NONE) {
@@ -142,7 +144,6 @@ color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
     }
 }
 
-// Sky control methods
 void Camera::set_sky_enabled(bool enabled)
 {
     sky_enabled = enabled;

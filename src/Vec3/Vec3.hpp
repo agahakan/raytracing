@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "../Rtweekend/Rtweekend.hpp"
+#include "../Utils/Utils.hpp"
 
 class Vec3
 {

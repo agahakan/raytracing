@@ -13,6 +13,6 @@ class Ray
     point3 at(double t) const;
 
   private:
-    point3 orig;  // Doit être défini dans Vec3.hpp
-    Vec3 dir;  // Doit être défini dans Vec3.hpp
+    point3 orig;
+    Vec3 dir;
 };
