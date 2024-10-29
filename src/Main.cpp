@@ -60,8 +60,6 @@ int main()
     }
     // END PRINT MESH
 
-    Camera cam(16.0 / 9.0, 400, 50);
-
     SDLGraphics graphics;
     if (!graphics.init("Raytracing C++", cam.image_width, cam.image_height)) {
         return 1;

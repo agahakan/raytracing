@@ -14,7 +14,6 @@ resources/
 
 # Ignore common build artifacts
 *.o
-*.obj
 *.dll
 *.exe
 *.so
