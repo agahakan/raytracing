@@ -1,9 +1,22 @@
+#include <atomic>
+#include <iostream>
+#include <thread>
+
 #include "Camera.hpp"
 
 Camera::Camera(double aspect_ratio, int image_width, int samples_per_pixel)
     : aspect_ratio(aspect_ratio)
     , image_width(image_width)
     , samples_per_pixel(samples_per_pixel)
+    , sky_enabled(true)
+    , sky_type(SkyType::GRADIENT)
+    , sky_solid_color(color(0.5, 0.7, 1.0))
+    ,  // Default solid sky color
+    sky_gradient_bottom(color(1.0, 1.0, 1.0))
+    ,  // White at the bottom
+    sky_gradient_top(color(0.5, 0.7, 1.0))
+    ,  // Light blue at the top
+    max_depth(50)
 {
     initialize();
 }
@@ -33,6 +46,8 @@ void Camera::initialize()
 
 void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 {
+    pixels.resize(image_width * image_height * 3);
+
     std::cout << "Starting render...\n";
 
     // Use a thread pool to render scanlines in parallel
@@ -52,13 +67,13 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
                 color pixel_color(0, 0, 0);
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     Ray r = get_Ray(i, j);
-                    pixel_color += Ray_color(r, world);
+                    pixel_color += Ray_color(r, world, 0);  // Start with depth 0
                 }
                 int index = ((image_height - 1 - j) * image_width + i) * 3;
                 write_color(pixels, index, pixel_samples_scale * pixel_color);
             }
 
-            // Optional: You can log progress here if desired
+            // Optional progress logging
             if (thread_id == 0 && j % 10 == 0) {
                 std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             }
@@ -80,9 +95,6 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 
 Ray Camera::get_Ray(int i, int j) const
 {
-    // Construct a camera ray originating from the origin and directed at a randomly sampled
-    // point around the pixel location (i, j).
-
     auto offset = sample_square();
     auto pixel_sample =
         pixel00_loc + ((i + offset.x()) * pixel_delta_u) + ((j + offset.y()) * pixel_delta_v);
@@ -95,20 +107,52 @@ Ray Camera::get_Ray(int i, int j) const
 
 Vec3 Camera::sample_square() const
 {
-    // Returns a vector to a random point in the [-0.5, -0.5] to [+0.5, +0.5] unit square.
     return Vec3(random_double() - 0.5, random_double() - 0.5, 0);
 }
 
-color Camera::Ray_color(const Ray &r, const Hittable &world) const
+color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
 {
-    HitRecord rec;
-
-    if (world.hit(r, Interval(0, infinity), rec)) {
-        Vec3 direction = random_on_hemiSphere(rec.normal);
-        return 0.5 * Ray_color(Ray(rec.p, direction), world);
+    if (depth >= max_depth) {
+        return color(0, 0, 0);  // Exceeded recursion depth
     }
 
-    Vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
+    HitRecord rec;
+
+    if (world.hit(r, Interval(0.001, infinity), rec)) {
+        Vec3 direction = random_on_hemiSphere(rec.normal);
+        return 0.5 * Ray_color(Ray(rec.p, direction), world, depth + 1);
+    }
+
+    if (!sky_enabled || sky_type == SkyType::NONE) {
+        return color(0, 0, 0);
+    } else if (sky_type == SkyType::SOLID_COLOR) {
+        return sky_solid_color;
+    } else if (sky_type == SkyType::GRADIENT) {
+        Vec3 unit_direction = unit_vector(r.direction());
+        auto t = 0.5 * (unit_direction.y() + 1.0);
+        return (1.0 - t) * sky_gradient_bottom + t * sky_gradient_top;
+    } else {
+        return color(0, 0, 0);
+    }
+}
+
+// Sky control methods
+void Camera::set_sky_enabled(bool enabled)
+{
+    sky_enabled = enabled;
+}
+
+void Camera::set_sky_solid_color(const color &c)
+{
+    sky_type = SkyType::SOLID_COLOR;
+    sky_solid_color = c;
+    sky_enabled = true;
+}
+
+void Camera::set_sky_gradient(const color &bottom_color, const color &top_color)
+{
+    sky_type = SkyType::GRADIENT;
+    sky_gradient_bottom = bottom_color;
+    sky_gradient_top = top_color;
+    sky_enabled = true;
 }
