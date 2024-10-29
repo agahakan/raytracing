@@ -31,7 +31,6 @@ void generate_sphere_mesh(Mesh &mesh,
         }
     }
 
-    // Create triangles
     for (int y = 0; y < latitude_segments; ++y) {
         for (int x = 0; x < longitude_segments; ++x) {
             int first = y * (longitude_segments + 1) + x;
@@ -42,10 +41,7 @@ void generate_sphere_mesh(Mesh &mesh,
             point3 v2 = vertices[first + 1];
             point3 v3 = vertices[second + 1];
 
-            // First triangle
             mesh.add_triangle(std::make_shared<Triangle>(v0, v1, v2, mat_ptr));
-
-            // Second triangle
             mesh.add_triangle(std::make_shared<Triangle>(v2, v1, v3, mat_ptr));
         }
     }
