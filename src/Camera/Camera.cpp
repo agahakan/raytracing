@@ -1,10 +1,10 @@
 #include "Camera.hpp"
 
-void Camera::render(const Hittable &world, SDLGraphics &graphics)
+void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 {
     initialize();
 
-    std::vector<Uint8> pixels(image_width * image_height * 3);
+    pixels.resize(image_width * image_height * 3);
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
@@ -22,13 +22,6 @@ void Camera::render(const Hittable &world, SDLGraphics &graphics)
     }
 
     std::clog << "\rDone.                 \n";
-
-    graphics.render(pixels, image_width, image_height);
-}
-
-int Camera::get_image_height() const
-{
-    return image_height;
 }
 
 void Camera::initialize()

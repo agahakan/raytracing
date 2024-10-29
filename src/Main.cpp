@@ -48,17 +48,20 @@ int main()
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
+    cam.initialize();
 
     SDLGraphics graphics;
-    if (!graphics.init("Raytracing C++", cam.image_width, 225)) {
+    if (!graphics.init("Raytracing C++", cam.image_width, cam.image_height)) {
         return 1;
     }
 
-    cam.render(world, graphics);
+    std::vector<Uint8> pixels;
+    cam.render(world, pixels);
 
     bool running = true;
     while (running) {
         running = graphics.processEvents();
+        graphics.render(pixels, cam.image_width, cam.image_height);
     }
     graphics.cleanup();
 
