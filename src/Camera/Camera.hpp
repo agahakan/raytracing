@@ -40,8 +40,8 @@ class Camera
 
     int max_depth;
 
-    point3 center;
-    point3 pixel00_loc;
+    Vec3 center;
+    Vec3 pixel00_loc;
     Vec3 pixel_delta_u;
     Vec3 pixel_delta_v;
 

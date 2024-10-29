@@ -51,10 +51,10 @@ int main()
 
     auto sphere_material = std::make_shared<Lambertian>(color(1.0, 0.0, 0.0));
     auto sphere_mesh = std::make_shared<Mesh>();
-    generate_sphere_mesh(*sphere_mesh, point3(0, 0, -1), 0.5, 20, 20, sphere_material);
+    generate_sphere_mesh(*sphere_mesh, Vec3(0, 0, -1), 0.5, 5, 5, sphere_material);
     world.add(sphere_mesh);
 
-    Camera cam(16.0 / 9.0, 400, 100);
+    Camera cam(16.0 / 9.0, 800, 100);
 
     cam.set_sky_enabled(true);
     // cam.set_sky_solid_color(color(0.8, 0.8, 0.8));

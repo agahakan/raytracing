@@ -32,8 +32,6 @@ class Vec3
     static Vec3 random(double min, double max);
 };
 
-using point3 = Vec3;
-
 std::ostream &operator<<(std::ostream &out, const Vec3 &v);
 Vec3 operator+(const Vec3 &u, const Vec3 &v);
 Vec3 operator-(const Vec3 &u, const Vec3 &v);

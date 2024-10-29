@@ -1,8 +1,8 @@
 #include "Triangle.hpp"
 
-Triangle::Triangle(const point3 &v0,
-                   const point3 &v1,
-                   const point3 &v2,
+Triangle::Triangle(const Vec3 &v0,
+                   const Vec3 &v1,
+                   const Vec3 &v2,
                    std::shared_ptr<Material> mat_ptr)
     : v0(v0)
     , v1(v1)

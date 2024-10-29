@@ -32,7 +32,7 @@ void Camera::initialize()
 
     pixel_samples_scale = 1.0 / samples_per_pixel;
 
-    center = point3(0, 0, 0);
+    center = Vec3(0, 0, 0);
 
     auto focal_length = 1.0;
     auto viewport_height = 2.0;
@@ -133,7 +133,7 @@ color Camera::Ray_color(const Ray &r, const Hittable &world, int depth) const
     }
     if (!sky_enabled || sky_type == SkyType::NONE) {
         return color(0, 0, 0);
-    } else if (sky_type == SkyType::SOLID_COLOR) {
+    }  if (sky_type == SkyType::SOLID_COLOR) {
         return sky_solid_color;
     } else if (sky_type == SkyType::GRADIENT) {
         Vec3 unit_direction = unit_vector(r.direction());

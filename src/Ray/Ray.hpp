@@ -6,13 +6,13 @@ class Ray
 {
   public:
     Ray();
-    Ray(const point3 &origin, const Vec3 &direction);
+    Ray(const Vec3 &origin, const Vec3 &direction);
 
-    const point3 &origin() const;
+    const Vec3 &origin() const;
     const Vec3 &direction() const;
-    point3 at(double t) const;
+    Vec3 at(double t) const;
 
   private:
-    point3 orig;
+    Vec3 orig;
     Vec3 dir;
 };

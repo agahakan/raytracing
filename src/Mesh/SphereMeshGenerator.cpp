@@ -5,13 +5,13 @@
 #include "../Material/Lambertian.hpp"
 
 void generate_sphere_mesh(Mesh &mesh,
-                          const point3 &center,
+                          const Vec3 &center,
                           double radius,
                           int longitude_segments,
                           int latitude_segments,
                           std::shared_ptr<Material> mat_ptr)
 {
-    std::vector<point3> vertices;
+    std::vector<Vec3> vertices;
 
     for (int y = 0; y <= latitude_segments; ++y) {
         double theta = y * pi / latitude_segments;
@@ -36,10 +36,10 @@ void generate_sphere_mesh(Mesh &mesh,
             int first = y * (longitude_segments + 1) + x;
             int second = first + longitude_segments + 1;
 
-            point3 v0 = vertices[first];
-            point3 v1 = vertices[second];
-            point3 v2 = vertices[first + 1];
-            point3 v3 = vertices[second + 1];
+            Vec3 v0 = vertices[first];
+            Vec3 v1 = vertices[second];
+            Vec3 v2 = vertices[first + 1];
+            Vec3 v3 = vertices[second + 1];
 
             mesh.add_triangle(std::make_shared<Triangle>(v0, v1, v2, mat_ptr));
             mesh.add_triangle(std::make_shared<Triangle>(v2, v1, v3, mat_ptr));
