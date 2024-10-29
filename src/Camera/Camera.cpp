@@ -1,4 +1,5 @@
 #include <atomic>
+#include <chrono>
 #include <iostream>
 #include <thread>
 
@@ -52,6 +53,9 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
 
     std::cout << "Starting render...\n";
 
+    // Démarrer le chronomètre
+    auto start = std::chrono::high_resolution_clock::now();
+
     const int num_threads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(num_threads);
 
@@ -91,7 +95,11 @@ void Camera::render(const Hittable &world, std::vector<Uint8> &pixels)
         thread.join();
     }
 
-    std::clog << "\nRender complete.\n";
+    // Arrêter le chronomètre
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::clog << "\nRender complete in " << duration.count() << " seconds.\n";
 }
 
 Ray Camera::get_Ray(int i, int j) const
