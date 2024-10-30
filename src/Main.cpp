@@ -243,6 +243,7 @@ int main()
     scene.AddSphere(redSphere);
     scene.AddSphere(blueSphere);
     scene.AddSphere(greenSphere);
+    scene.AddLight(ambientLight);
     scene.AddLight(pointLight);
     scene.AddLight(directionalLight);
     scene.AddPlane(plane);
