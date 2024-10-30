@@ -21,11 +21,8 @@ struct Vec3
     }
 
     Vec3 operator-(const Vec3 &v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
-
     Vec3 operator+(const Vec3 &v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
-
     Vec3 operator*(double t) const { return Vec3(x * t, y * t, z * t); }
-
     Vec3 operator/(double t) const { return Vec3(x / t, y / t, z / t); }
 };
 
@@ -69,21 +66,12 @@ struct Plane
 
 struct Light
 {
-    enum Type
-    {
-        AMBIENT,
-        POINT,
-        DIRECTIONAL
-    } type;
     double intensity;
-    Vec3 position;  // ? Used only for point lights
-    Vec3 direction;  // ? Used only for directional lights
+    Vec3 position;
 
-    Light(Type t, double intensity, const Vec3 &pos = Vec3(), const Vec3 &dir = Vec3())
-        : type(t)
-        , intensity(intensity)
+    Light(double intensity, const Vec3 &pos = Vec3())
+        : intensity(intensity)
         , position(pos)
-        , direction(dir)
     {
     }
 };
@@ -151,20 +139,11 @@ double ComputeLighting(const Vec3 &P, const Vec3 &N, const Scene &scene)
     double i = 0.0;
 
     for (const auto &light : scene.lights) {
-        if (light.type == Light::AMBIENT) {
-            i += light.intensity;
-        } else {
-            Vec3 L;
-            if (light.type == Light::POINT) {
-                L = light.position - P;
-            } else {
-                L = light.direction;
-            }
+        Vec3 L;
+        L = light.position - P;
 
-            double n_dot_l = dot(N, L);
-            if (n_dot_l > 0) {
-                i += light.intensity * n_dot_l / (length(N) * length(L));
-            }
+        if (dot(N, L) > 0) {
+            i += light.intensity * dot(N, L) / (length(N) * length(L));
         }
     }
     return i;
@@ -215,38 +194,53 @@ Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene)
 // CONVERT SCREEN COORDINATES TO VIEWPORT COORDINATES
 Vec3 CanvasToViewport(int x, int y, int image_width, int image_height)
 {
-    double viewport_size = 1.0;  // ? viewport ration (1.0 = 100% = image size)
-    double projection_plane_d = 1.0;  // ? distance projection (z coordinate)
+    double viewport_width = 1.0;  // ? viewport width
+    double viewport_height = viewport_width
+        / (image_width / static_cast<double>(image_height));  // ? viewport height (ratio adjusted)
 
-    return Vec3(x * viewport_size / image_width,  // ? convert x to viewport coordinates
-                y * viewport_size / image_height,  // ? convert y to viewport coordinates
-                projection_plane_d);
+    double projection_plane_d = 1.0;  // ? projection plane distance
+
+    return Vec3(
+        x * viewport_width / image_width, y * viewport_height / image_height, projection_plane_d);
+}
+
+// CREATE RANDOM SPHERES
+void CreateFieldSpheres(Scene &scene, int count)
+{
+    for (int i = 0; i < count; ++i) {
+        double x = (std::rand() % 100 - 50) / 10.0;  // ? between -5 and 5
+        double y = (std::rand() % 20 - 10) / 10.0;  // ? between -1 and 1
+        double z = (std::rand() % 100 + 30) / 10.0;  // ? between 3 and 13
+
+        double radius = (std::rand() % 50 + 10) / 100.0;
+
+        Color color(static_cast<double>(std::rand() % 100) / 100.0,
+                    static_cast<double>(std::rand() % 100) / 100.0,
+                    static_cast<double>(std::rand() % 100) / 100.0);
+
+        Sphere sphere(Vec3(x, y, z), radius, color);
+        scene.AddSphere(sphere);
+    }
 }
 
 int main()
 {
-    const int image_width = 800;
+    const double aspect_ratio = 4.0 / 3.0;
     const int image_height = 800;
+    const int image_width = static_cast<int>(image_height * aspect_ratio);
+
     Image image(image_width, image_height);
 
     Scene scene;
 
-    Light ambientLight(Light::AMBIENT, 0.2);  // ? ambient light
-    Light pointLight(Light::POINT, 0.6, Vec3(2, 1, 0));  // ? point light
-    Light directionalLight(Light::DIRECTIONAL, 0.2, Vec3(), Vec3(1, 4, 4));  // ? directional light
+    Light light(1.2, Vec3(2, 1, 0));
 
-    Sphere redSphere(Vec3(0, -0.8, 3), 1, Color(1, 0, 0));  // ? red sphere
-    Sphere blueSphere(Vec3(2, 0, 4), 1, Color(0, 0, 1));  // ? blue sphere
-    Sphere greenSphere(Vec3(-2, 0, 4), 1, Color(0, 1, 0));  // ? green sphere
-    Plane plane(Vec3(0, 1, 0), 1, Color(1, 1, 1));  // ? white plane
+    Plane plane(Vec3(0, 1, 0), 1, Color(1, 1, 1));
 
-    scene.AddSphere(redSphere);
-    scene.AddSphere(blueSphere);
-    scene.AddSphere(greenSphere);
-    scene.AddLight(ambientLight);
-    scene.AddLight(pointLight);
-    scene.AddLight(directionalLight);
+    scene.AddLight(light);
     scene.AddPlane(plane);
+
+    CreateFieldSpheres(scene, 10);
 
     const Vec3 O(0, 0, 0);
 
