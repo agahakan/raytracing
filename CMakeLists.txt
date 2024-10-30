@@ -19,21 +19,28 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-2.30.8
 )
+FetchContent_MakeAvailable(SDL2)
 
-FetchContent_Declare(
-    assimp
-    GIT_REPOSITORY https://github.com/assimp/assimp.git
-    GIT_TAG v5.4.3
+add_subdirectory(src/raymath)
+add_subdirectory(src/rayimage)
+
+set(LODEPNG_SRC ${CMAKE_SOURCE_DIR}/src/libs/lodepng/lodepng.cpp)
+set(LODEPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/libs/lodepng)
+
+file(GLOB PROJECT_SOURCES 
+    "src/*.cpp" 
 )
-FetchContent_MakeAvailable(assimp SDL2)
 
-# Recursively gather all .cpp and .hpp files under src/
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
+# Create the main executable
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${LODEPNG_SRC})
 
-# Create the main executable with the collected sources
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage SDL2::SDL2)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE assimp SDL2::SDL2)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    ${LODEPNG_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/raymath
+    ${PROJECT_SOURCE_DIR}/src/rayimage
+)
 
 # Compiler flags
 target_compile_options(${PROJECT_NAME} PRIVATE
