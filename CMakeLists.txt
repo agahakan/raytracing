@@ -63,13 +63,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/src/config
 )
 
-# Compiler flags
-target_compile_options(${PROJECT_NAME} PRIVATE
-    $<$<CXX_COMPILER_ID:GNU>:-fno-exceptions>
-    $<$<CXX_COMPILER_ID:Clang>:-fno-exceptions>
-    $<$<CXX_COMPILER_ID:MSVC>:/EHs->
-)
-
 # WebAssembly specific settings
 if(EMSCRIPTEN)
     set(WASM_LINK_FLAGS
