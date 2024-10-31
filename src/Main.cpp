@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -7,30 +8,40 @@
 #include <thread>
 #include <vector>
 
-#include "Light.hpp"
-#include "Vec3.hpp"
-#include "Plane.hpp"
-#include "Sphere.hpp"
-#include "Ray.hpp"
-#include "Trace.hpp"
-#include "Scene.hpp"
+#include "Config.hpp"
 #include "Image.hpp"
+#include "Light.hpp"
+#include "Plane.hpp"
+#include "Ray.hpp"
+#include "Scene.hpp"
+#include "Sphere.hpp"
+#include "Trace.hpp"
+#include "Vec3.hpp"
 
 int main()
 {
-    const int canvas_width = 1920;
-    const int canvas_height = 1080;
+    Config config;
+    try {
+        config = config.loadConfig("../config.json");
+    } catch (const std::runtime_error &e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    const int canvas_width = config.canvas_width;
+    const int canvas_height = config.canvas_height;
+    const std::string filename = config.filename;
+
     Image image(canvas_width, canvas_height);
     Scene scene;
 
-    const int grid_size = 6;
-    const double spacing = 2.5;
-    const double amplitude = 1.0;
-    const double frequency = 0.5;
+    int grid_size = config.grid_size;
+    double spacing = config.spacing;
+    double amplitude = config.amplitude;
+    double frequency = config.frequency;
+    double min_y_offset = config.min_y_offset;
+    double min_z = config.min_z;
 
-    const double min_y_offset = 1.0;
-    const double min_z = 6.0;
-    const double base_z = min_z + grid_size * spacing;
+    double base_z = min_z + grid_size * spacing;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -75,9 +86,9 @@ int main()
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = end_time - start_time;
 
-    const char *filename = "raytraced_wave_field.png";
-    image.WriteFile(filename);
-    std::cout << "Image saved as " << filename << std::endl;
+    const char *output_filename = filename.c_str();
+    image.WriteFile(output_filename);
+    std::cout << "Image saved as " << output_filename << std::endl;
     std::cout << "Rendering time: " << elapsed_time.count() << " seconds" << std::endl;
 
     return 0;

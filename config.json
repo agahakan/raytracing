@@ -1,7 +1,7 @@
 {
   "canvas_width": 1920,
   "canvas_height": 1080,
-  "filename": "raytraced_wave_field.png",
+  "filename": "raytraced_wave_field_json.png",
   "grid": {
     "grid_size": 6,
     "spacing": 2.5,

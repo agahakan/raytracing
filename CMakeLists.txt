@@ -39,6 +39,7 @@ file(GLOB PROJECT_SOURCES
     "src/raytracer/*.cpp"
     "src/rendering/*.cpp"
     "src/scene/*.cpp"
+    "src/config/*.cpp"
 )
 
 # Create the main executable
@@ -59,6 +60,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/src/rendering
     ${PROJECT_SOURCE_DIR}/src/scene
     ${PROJECT_SOURCE_DIR}/src/utils
+    ${PROJECT_SOURCE_DIR}/src/config
 )
 
 # Compiler flags
