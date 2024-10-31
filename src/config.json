@@ -1,0 +1,20 @@
+{
+  "canvas_width": 1920,
+  "canvas_height": 1080,
+  "filename": "raytraced_wave_field.png",
+  "grid": {
+    "grid_size": 6,
+    "spacing": 2.5,
+    "amplitude": 1.0,
+    "frequency": 0.5,
+    "min_y_offset": 1.0,
+    "min_z": 6.0
+  },
+  "camera": {
+    "origin": [
+      0,
+      0,
+      0
+    ]
+  }
+}

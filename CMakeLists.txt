@@ -12,6 +12,16 @@ endif()
 
 include(FetchContent)
 
+# Fetch nlohmann/json
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.2 # Remplacez par la version souhaitée
+)
+
+# Make the content available
+FetchContent_MakeAvailable(json)
+
 add_subdirectory(src/raymath)
 add_subdirectory(src/rayimage)
 
@@ -25,7 +35,7 @@ file(GLOB PROJECT_SOURCES
 # Create the main executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${LODEPNG_SRC})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage)
+target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage nlohmann_json::nlohmann_json)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
     ${LODEPNG_INCLUDE_DIR}

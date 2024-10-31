@@ -1,5 +1,5 @@
-// src/Main.cpp
 
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -264,7 +264,6 @@ Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene, i
 
     Vec3 P = ray.origin + ray.direction * closest_t;
     Vec3 N = closest_object->getNormal(P);
-
     Vec3 V = ray.direction * -1;
 
     double intensity = ComputeLighting(P, N, V, scene);
@@ -273,7 +272,9 @@ Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene, i
     if (closest_object->reflection > 0.0) {
         Vec3 R_dir = Reflect(ray.direction, N).normalize();
         Ray reflection_ray(P + N * 1e-4, R_dir);
+
         Color reflection_color = TraceRay(reflection_ray, 1e-4, INF, scene, depth + 1);
+
         object_color = object_color * (1.0 - closest_object->reflection)
             + reflection_color * closest_object->reflection;
     }
@@ -343,6 +344,8 @@ int main()
 
     const Vec3 O(0, 0, 0);
 
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     auto num_threads = std::thread::hardware_concurrency();
     if (num_threads == 0)
         num_threads = 4;
@@ -372,9 +375,13 @@ int main()
         thread.join();
     }
 
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+
     const char *filename = "raytraced_wave_field.png";
     image.WriteFile(filename);
     std::cout << "Image saved as " << filename << std::endl;
+    std::cout << "Rendering time: " << elapsed_time.count() << " seconds" << std::endl;
 
     return 0;
 }
