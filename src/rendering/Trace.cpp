@@ -8,8 +8,6 @@ void RenderScene(const Scene &scene, Image &image, int canvas_width, int canvas_
 {
     const Vec3 O(0, 0, 0);
     auto num_threads = std::thread::hardware_concurrency();
-    if (num_threads == 0)
-        num_threads = 4;
     std::vector<std::thread> threads;
     int rows_per_thread = canvas_height / num_threads;
 
