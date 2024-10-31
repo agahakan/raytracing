@@ -12,7 +12,7 @@ class Config
   public:
     int canvas_width = 1920;
     int canvas_height = 1080;
-    std::string filename = "raytraced_wave_field.png";
+    std::string filename = "scene_config.png";
     int grid_size = 6;
     double spacing = 2.5;
     double amplitude = 1.0;

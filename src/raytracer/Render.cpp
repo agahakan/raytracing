@@ -1,5 +1,6 @@
-#include "Render.hpp"
 #include <algorithm>
+
+#include "Render.hpp"
 
 Vec3 Reflect(const Vec3 &I, const Vec3 &N)
 {
@@ -23,8 +24,7 @@ double ComputeLighting(const Vec3 &P, const Vec3 &N, const Vec3 &V, const Scene 
             L = light.position - P;
             max_distance = length(L);
             L = L / max_distance;
-        }
-        else if (light.type == LightType::Directional) {
+        } else if (light.type == LightType::Directional) {
             L = light.position.normalize();
             max_distance = INF;
         }
@@ -55,6 +55,10 @@ double ComputeLighting(const Vec3 &P, const Vec3 &N, const Vec3 &V, const Scene 
 
 Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene, int depth)
 {
+    if (depth > 3) {
+        return Color(0, 0, 0);
+    }
+
     double closest_t = INF;
     const Object *closest_object = nullptr;
 
@@ -104,4 +108,3 @@ Vec3 CanvasToViewport(int x, int y, int canvas_width, int canvas_height)
 
     return Vec3(normalized_x * viewport_width, normalized_y * viewport_height, projection_plane_d);
 }
-
