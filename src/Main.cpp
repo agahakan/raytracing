@@ -1,7 +1,10 @@
-#include <chrono>
+// src/Main.cpp
+
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <memory>
+#include <random>
 #include <thread>
 #include <vector>
 
@@ -13,17 +16,25 @@ struct Vec3
 {
     double x, y, z;
 
-    Vec3(double x = 0, double y = 0, double z = 0)
-        : x(x)
-        , y(y)
-        , z(z)
+    Vec3(double x_ = 0, double y_ = 0, double z_ = 0)
+        : x(x_)
+        , y(y_)
+        , z(z_)
     {
     }
 
-    Vec3 operator-(const Vec3 &v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
     Vec3 operator+(const Vec3 &v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
+    Vec3 operator-(const Vec3 &v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
     Vec3 operator*(double t) const { return Vec3(x * t, y * t, z * t); }
     Vec3 operator/(double t) const { return Vec3(x / t, y / t, z / t); }
+
+    Vec3 operator-() const { return Vec3(-x, -y, -z); }
+
+    Vec3 normalize() const
+    {
+        double len = std::sqrt(x * x + y * y + z * z);
+        return Vec3(x / len, y / len, z / len);
+    }
 };
 
 double dot(const Vec3 &a, const Vec3 &b)
@@ -36,58 +47,32 @@ double length(const Vec3 &v)
     return std::sqrt(dot(v, v));
 }
 
-struct Sphere
+enum class LightType
 {
-    Vec3 center;
-    double radius;
-    Color color;
-
-    Sphere(const Vec3 &c, double r, const Color &col)
-        : center(c)
-        , radius(r)
-        , color(col)
-    {
-    }
-};
-
-struct Plane
-{
-    Vec3 normal;
-    double distance;
-    Color color;
-
-    Plane(const Vec3 &n, double d, const Color &col)
-        : normal(n)
-        , distance(d)
-        , color(col)
-    {
-    }
+    Ambient,
+    Point,
+    Directional
 };
 
 struct Light
 {
+    LightType type;
     double intensity;
     Vec3 position;
 
-    Light(double intensity, const Vec3 &pos = Vec3())
-        : intensity(intensity)
-        , position(pos)
+    Light(LightType type_, double intensity_)
+        : type(type_)
+        , intensity(intensity_)
+        , position(0, 0, 0)
     {
     }
-};
 
-class Scene
-{
-  public:
-    std::vector<Sphere> spheres;
-    std::vector<Plane> planes;
-    std::vector<Light> lights;
-
-    Scene() {};
-
-    void AddSphere(const Sphere &sphere) { spheres.emplace_back(sphere); }
-    void AddPlane(const Plane &plane) { planes.emplace_back(plane); }
-    void AddLight(const Light &light) { lights.emplace_back(light); }
+    Light(LightType type_, double intensity_, const Vec3 &vec)
+        : type(type_)
+        , intensity(intensity_)
+        , position(vec)
+    {
+    }
 };
 
 struct Ray
@@ -95,204 +80,301 @@ struct Ray
     Vec3 origin;
     Vec3 direction;
 
-    Ray(const Vec3 &origin, const Vec3 &direction)
-        : origin(origin)
-        , direction(direction)
+    Ray(const Vec3 &origin_, const Vec3 &direction_)
+        : origin(origin_)
+        , direction(direction_.normalize())
     {
     }
 };
 
-// INTERSECT RAY WITH SPHERE
-std::pair<double, double> IntersectRaySphere(const Ray &ray, const Sphere &sphere)
+struct Object
 {
-    Vec3 CO = ray.origin - sphere.center;
-    double a = dot(ray.direction, ray.direction);  // ? dot product
-    double b = 2 * dot(CO, ray.direction);  // ? dot product
-    double c = dot(CO, CO) - sphere.radius * sphere.radius;
-    double discriminant = b * b - 4 * a * c;
+    Color color;
+    double reflection;
 
-    if (discriminant < 0) {
-        return {INF, INF};
+    Object(const Color &col, double reflection_ = 0.0)
+        : color(col)
+        , reflection(reflection_)
+    {
     }
 
-    double sqrt_discriminant = std::sqrt(discriminant);
-    double t1 = (-b + sqrt_discriminant) / (2 * a);
-    double t2 = (-b - sqrt_discriminant) / (2 * a);
-    return {t1, t2};
-}
+    virtual double Intersect(const Ray &ray, double t_min, double t_max) const = 0;
+    virtual Vec3 getNormal(const Vec3 &P) const = 0;
+    virtual ~Object() = default;
+};
 
-// INTERSECT RAY WITH PLANE
-double IntersectRayPlane(const Ray &ray, const Plane &plane)
+struct Sphere : public Object
 {
-    double denominator = dot(ray.direction, plane.normal);
-    if (denominator == 0) {
+    Vec3 center;
+    double radius;
+
+    Sphere(const Vec3 &c, double r, const Color &col, double reflection_ = 0.0)
+        : Object(col, reflection_)
+        , center(c)
+        , radius(r)
+    {
+    }
+
+    double Intersect(const Ray &ray, double t_min, double t_max) const override
+    {
+        Vec3 CO = ray.origin - center;
+        double a = dot(ray.direction, ray.direction);
+        double b = 2.0 * dot(CO, ray.direction);
+        double c = dot(CO, CO) - radius * radius;
+        double discriminant = b * b - 4 * a * c;
+
+        if (discriminant < 0) {
+            return INF;
+        }
+
+        double sqrt_discriminant = std::sqrt(discriminant);
+        double t1 = (-b + sqrt_discriminant) / (2.0 * a);
+        double t2 = (-b - sqrt_discriminant) / (2.0 * a);
+
+        if (t1 >= t_min && t1 <= t_max) {
+            return t1;
+        }
+
+        if (t2 >= t_min && t2 <= t_max) {
+            return t2;
+        }
+
         return INF;
     }
 
-    double t = -(dot(ray.origin, plane.normal) + plane.distance) / denominator;
-    return t;
+    Vec3 getNormal(const Vec3 &P) const override { return (P - center).normalize(); }
+};
+
+struct Plane : public Object
+{
+    Vec3 c;
+    Vec3 n;
+
+    Plane(const Vec3 &c_, const Vec3 &n_, const Color &col, double reflection_ = 0.0)
+        : Object(col, reflection_)
+        , c(c_)
+        , n(n_.normalize())
+    {
+    }
+
+    double Intersect(const Ray &ray, double t_min, double t_max) const override
+    {
+        double denom = dot(ray.direction, n);
+
+        if (std::abs(denom) < 1e-6) {
+            return INF;
+        }
+
+        double num = dot(c - ray.origin, n);
+        double t = num / denom;
+
+        if (t >= t_min && t <= t_max) {
+            return t;
+        }
+
+        return INF;
+    }
+
+    Vec3 getNormal(const Vec3 &P) const override { return n; }
+};
+
+class Scene
+{
+  public:
+    std::vector<std::shared_ptr<Object>> objects;
+    std::vector<Light> lights;
+
+    Scene() = default;
+
+    void AddObject(const std::shared_ptr<Object> &object) { objects.emplace_back(object); }
+    void AddLight(const Light &light) { lights.emplace_back(light); }
+};
+
+Vec3 Reflect(const Vec3 &I, const Vec3 &N)
+{
+    return N * (2.0 * dot(N, I)) - I;
 }
 
-// COMPUTE LIGHTING
-double ComputeLighting(const Vec3 &P, const Vec3 &N, const Scene &scene)
+double ComputeLighting(const Vec3 &P, const Vec3 &N, const Vec3 &V, const Scene &scene)
 {
     double i = 0.0;
 
     for (const auto &light : scene.lights) {
-        Vec3 L;
-        L = light.position - P;
+        if (light.type == LightType::Ambient) {
+            i += light.intensity;
+            continue;
+        }
 
-        if (dot(N, L) > 0) {
-            i += light.intensity * dot(N, L) / (length(N) * length(L));
+        Vec3 L;
+        double max_distance = INF;
+
+        if (light.type == LightType::Point) {
+            L = light.position - P;
+            max_distance = length(L);
+            L = L / max_distance;
+        } else if (light.type == LightType::Directional) {
+            L = light.position.normalize();
+            max_distance = INF;
+        }
+
+        Ray shadow_ray(P + N * 1e-4, L);
+        bool in_shadow = false;
+
+        for (const auto &object : scene.objects) {
+            double t = object->Intersect(shadow_ray, 1e-4, max_distance);
+            if (t < max_distance) {
+                in_shadow = true;
+                break;
+            }
+        }
+
+        if (!in_shadow) {
+            double n_dot_l = dot(N, L);
+            if (n_dot_l > 0) {
+                i += light.intensity * n_dot_l / (length(N) * length(L));
+            }
         }
     }
+
+    i = std::min(i, 1.0);
+
     return i;
 }
 
-// TRACE RAY AND RETURN COLOR
-Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene)
+Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene, int depth)
 {
+    if (depth > 3) {
+        return Color(0, 0, 0);
+    }
+
     double closest_t = INF;
-    const Sphere *closest_sphere = nullptr;
-    const Plane *closest_plane = nullptr;
+    const Object *closest_object = nullptr;
 
-    for (const auto &sphere : scene.spheres) {
-        auto [t1, t2] = IntersectRaySphere(ray, sphere);
-        if (t1 >= t_min && t1 <= t_max && t1 < closest_t) {
-            closest_t = t1;
-            closest_sphere = &sphere;
-        }
-        if (t2 >= t_min && t2 <= t_max && t2 < closest_t) {
-            closest_t = t2;
-            closest_sphere = &sphere;
-        }
-    }
-
-    for (const auto &plane : scene.planes) {
-        double t = IntersectRayPlane(ray, plane);
-        if (t >= t_min && t <= t_max && t < closest_t) {
+    for (const auto &object : scene.objects) {
+        double t = object->Intersect(ray, t_min, closest_t);
+        if (t < closest_t) {
             closest_t = t;
-            closest_plane = &plane;
+            closest_object = object.get();
         }
     }
 
-    if (closest_plane) {
-        return closest_plane->color;
+    if (!closest_object) {
+        return Color(0, 0, 0);
     }
 
-    if (closest_sphere) {
-        Vec3 P = ray.origin + ray.direction * closest_t;
-        Vec3 N = P - closest_sphere->center;
-        N = N / length(N);
-        double intensity = ComputeLighting(P, N, scene);
-        return closest_sphere->color * intensity;
+    Vec3 P = ray.origin + ray.direction * closest_t;
+    Vec3 N = closest_object->getNormal(P);
+
+    Vec3 V = ray.direction * -1;
+
+    double intensity = ComputeLighting(P, N, V, scene);
+    Color object_color = closest_object->color * intensity;
+
+    if (closest_object->reflection > 0.0) {
+        Vec3 R_dir = Reflect(ray.direction, N).normalize();
+        Ray reflection_ray(P + N * 1e-4, R_dir);
+        Color reflection_color = TraceRay(reflection_ray, 1e-4, INF, scene, depth + 1);
+        object_color = object_color * (1.0 - closest_object->reflection)
+            + reflection_color * closest_object->reflection;
     }
 
-    return Color(0.2, 0.2, 0.2);
+    return object_color;
 }
 
-// CONVERT SCREEN COORDINATES TO VIEWPORT COORDINATES
-Vec3 CanvasToViewport(int x, int y, int image_width, int image_height)
+Vec3 CanvasToViewport(int x, int y, int canvas_width, int canvas_height)
 {
-    double viewport_width = 1.0;  // ? viewport width
-    double viewport_height = viewport_width
-        / (image_width / static_cast<double>(image_height));  // ? viewport height (ratio adjusted)
+    double aspect_ratio = static_cast<double>(canvas_width) / static_cast<double>(canvas_height);
+    double viewport_height = 1.0;
+    double viewport_width = aspect_ratio * viewport_height;
+    double projection_plane_d = 1.0;
 
-    double projection_plane_d = 1.0;  // ? projection plane distance
+    double normalized_x = (static_cast<double>(x) + 0.5 - static_cast<double>(canvas_width) / 2.0)
+        / (static_cast<double>(canvas_width) / 2.0);
+    double normalized_y =
+        (static_cast<double>(canvas_height) / 2.0 - (static_cast<double>(y) + 0.5))
+        / (static_cast<double>(canvas_height) / 2.0);
 
-    return Vec3(
-        x * viewport_width / image_width, y * viewport_height / image_height, projection_plane_d);
-}
-
-// CREATE RANDOM SPHERES
-void CreateFieldSpheres(Scene &scene, int count)
-{
-    for (int i = 0; i < count; ++i) {
-        double x = (std::rand() % 100 - 50) / 10.0;  // ? between -5 and 5
-        double y = (std::rand() % 20 - 10) / 10.0;  // ? between -1 and 1
-        double z = (std::rand() % 100 + 30) / 10.0;  // ? between 3 and 13
-
-        double radius = (std::rand() % 50 + 10) / 100.0;
-
-        Color color(static_cast<double>(std::rand() % 100) / 100.0,
-                    static_cast<double>(std::rand() % 100) / 100.0,
-                    static_cast<double>(std::rand() % 100) / 100.0);
-
-        Sphere sphere(Vec3(x, y, z), radius, color);
-        scene.AddSphere(sphere);
-    }
+    return Vec3(normalized_x * viewport_width, normalized_y * viewport_height, projection_plane_d);
 }
 
 int main()
 {
-    const double aspect_ratio = 4.0 / 3.0;
-    const int image_height = 800;
-    const int image_width = static_cast<int>(image_height * aspect_ratio);
-
-    Image image(image_width, image_height);
-
+    const int canvas_width = 1920;
+    const int canvas_height = 1080;
+    Image image(canvas_width, canvas_height);
     Scene scene;
 
-    Light light(1.2, Vec3(2, 1, 0));
+    const int grid_size = 6;
+    const double spacing = 2.5;
+    const double amplitude = 1.0;
+    const double frequency = 0.5;
 
-    Plane plane(Vec3(0, 1, 0), 1, Color(1, 1, 1));
+    const double min_y_offset = 1.0;
+    const double min_z = 6.0;
+    const double base_z = min_z + grid_size * spacing;
 
-    scene.AddLight(light);
-    scene.AddPlane(plane);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
 
-    CreateFieldSpheres(scene, 10);
+    for (int i = -grid_size; i <= grid_size; ++i) {
+        for (int j = -grid_size; j <= grid_size; ++j) {
+            double x = i * spacing;
+            double z = j * spacing + base_z;
+            double wave_value = sin(frequency * (x + z));
+            double y = amplitude * wave_value + min_y_offset;
+            double r = dis(gen);
+            double g = dis(gen);
+            double b = dis(gen);
+            Color color(r, g, b);
+            double reflection = 0.2;
+            auto sphere = std::make_shared<Sphere>(Vec3(x, y, z), 1.0, color, reflection);
+            scene.AddObject(sphere);
+        }
+    }
+
+    std::shared_ptr<Object> groundPlane =
+        std::make_shared<Plane>(Vec3(0, -1, 0), Vec3(0, 1, 0), Color(1, 1, 1), 0.5);
+    scene.AddObject(groundPlane);
+
+    scene.AddLight(Light(LightType::Ambient, 0.2));
+    scene.AddLight(Light(LightType::Point, 2.8, Vec3(2, 1, 0)));
+    scene.AddLight(Light(LightType::Directional, 0.2, Vec3(1, 4, 4)));
 
     const Vec3 O(0, 0, 0);
 
-    auto start_time = std::chrono::high_resolution_clock::now();
+    auto num_threads = std::thread::hardware_concurrency();
+    if (num_threads == 0)
+        num_threads = 4;
+    std::vector<std::thread> threads;
+    int rows_per_thread = canvas_height / num_threads;
 
-    // for (int y = 0; y < image_height; ++y) {
-    //     for (int x = 0; x < image_width; ++x) {
-    //         double canvas_x = x - image_width / 2.0;
-    //         double canvas_y = -(y - image_height / 2.0);
+    auto render = [&](int start_y, int end_y)
+    {
+        for (int y_pixel = start_y; y_pixel < end_y; ++y_pixel) {
+            for (int x_pixel = 0; x_pixel < canvas_width; ++x_pixel) {
+                Vec3 D =
+                    CanvasToViewport(x_pixel, y_pixel, canvas_width, canvas_height).normalize();
+                Ray ray(O, D);
+                Color color = TraceRay(ray, 1.0, INF, scene, 0);
+                image.SetPixel(x_pixel, y_pixel, color);
+            }
+        }
+    };
 
-    //         Vec3 D = CanvasToViewport(canvas_x, canvas_y, image_width, image_height);
-    //         Ray ray(O, D);
-    //         Color color = TraceRay(ray, 1, INF, scene);
-
-    //         image.SetPixel(x, y, color);
-    //     }
-    // }
-
-    const int num_threads = std::thread::hardware_concurrency();
-    std::vector<std::thread> threads(num_threads);
-
-    for (int t = 0; t < num_threads; ++t) {
-        threads[t] = std::thread(
-            [&, t]()
-            {
-                for (int y = t; y < image_height; y += num_threads) {
-                    for (int x = 0; x < image_width; ++x) {
-                        double canvas_x = x - image_width / 2.0;
-                        double canvas_y = -(y - image_height / 2.0);
-
-                        Vec3 D = CanvasToViewport(canvas_x, canvas_y, image_width, image_height);
-                        Ray ray(O, D);
-                        Color color = TraceRay(ray, 1, INF, scene);
-
-                        image.SetPixel(x, y, color);
-                    }
-                }
-            });
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        int start_y = i * rows_per_thread;
+        int end_y = (i == num_threads - 1) ? canvas_height : start_y + rows_per_thread;
+        threads.emplace_back(render, start_y, end_y);
     }
 
-    for (auto &t : threads) {
-        t.join();
+    for (auto &thread : threads) {
+        thread.join();
     }
 
-    auto end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end_time - start_time;
-
-    const char *filename = "raytraced_scene.png";
+    const char *filename = "raytraced_wave_field.png";
     image.WriteFile(filename);
     std::cout << "Image saved as " << filename << std::endl;
-
-    std::cout << "Elapsed time: " << elapsed.count() << "s" << std::endl;
 
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 
 class Color
@@ -16,9 +17,19 @@ class Color
     float g = 0;
 
     Color operator+(Color const &col);
-    Color operator*(float scalar) const;  // Multiplier par un scalaire
-    Color operator*(Color const &col) const;  // Multiplier par une autre couleur
-    Color Clamp() const;  // Clamp les valeurs de couleur entre 0 et 1
     Color &operator=(Color const &col);
+    Color operator*(double intensity) const
+    {
+        return Color(r * intensity, g * intensity, b * intensity);
+    }
+
+    Color &clamp(float min = 0.0f, float max = 1.0f)
+    {
+        r = std::clamp(r, min, max);
+        g = std::clamp(g, min, max);
+        b = std::clamp(b, min, max);
+        return *this;
+    }
+
     friend std::ostream &operator<<(std::ostream &_stream, Color const &col);
 };

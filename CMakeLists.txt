@@ -8,18 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(EMSCRIPTEN)
     set(WASM ON)
     set(BUILD_SHARED_LIBS OFF)
-    set(SDL_SHARED OFF CACHE BOOL "Build SDL shared library" FORCE)
-    set(SDL_STATIC ON CACHE BOOL "Build SDL static library" FORCE)
 endif()
 
 include(FetchContent)
-
-FetchContent_Declare(
-    SDL2
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-2.30.8
-)
-FetchContent_MakeAvailable(SDL2)
 
 add_subdirectory(src/raymath)
 add_subdirectory(src/rayimage)
@@ -34,7 +25,7 @@ file(GLOB PROJECT_SOURCES
 # Create the main executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${LODEPNG_SRC})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage SDL2::SDL2)
+target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
     ${LODEPNG_INCLUDE_DIR}
@@ -52,7 +43,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 # WebAssembly specific settings
 if(EMSCRIPTEN)
     set(WASM_LINK_FLAGS
-        "-s USE_SDL=2"
         "-s WASM=1"
         "-s ALLOW_MEMORY_GROWTH=1"
         "-s EXPORTED_RUNTIME_METHODS=['cwrap']"
