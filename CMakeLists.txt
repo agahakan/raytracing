@@ -4,7 +4,7 @@ project(RayTracer)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Check if we're building for Wasm
+# Check if we're building for WebAssembly (Wasm)
 if(EMSCRIPTEN)
     set(WASM ON)
     set(BUILD_SHARED_LIBS OFF)
@@ -12,35 +12,53 @@ endif()
 
 include(FetchContent)
 
-# Fetch nlohmann/json
+# Fetch nlohmann/json library
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2 # Remplacez par la version souhaitée
+    GIT_TAG v3.11.2
 )
 
-# Make the content available
 FetchContent_MakeAvailable(json)
 
+# Add subdirectories for raymath and rayimage
 add_subdirectory(src/raymath)
 add_subdirectory(src/rayimage)
 
+# LodePNG library
 set(LODEPNG_SRC ${CMAKE_SOURCE_DIR}/src/libs/lodepng/lodepng.cpp)
 set(LODEPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/libs/lodepng)
 
-file(GLOB PROJECT_SOURCES 
-    "src/*.cpp" 
+# Gather project sources
+file(GLOB PROJECT_SOURCES
+    "src/main/*.cpp"
+    "src/*.cpp"
+    "src/lighting/*.cpp"
+    "src/math/*.cpp"
+    "src/objects/*.cpp"
+    "src/raytracer/*.cpp"
+    "src/rendering/*.cpp"
+    "src/scene/*.cpp"
 )
 
 # Create the main executable
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${LODEPNG_SRC})
 
+# Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE raymath rayimage nlohmann_json::nlohmann_json)
 
+# Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE 
     ${LODEPNG_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/src/raymath
     ${PROJECT_SOURCE_DIR}/src/rayimage
+    ${PROJECT_SOURCE_DIR}/src/lighting
+    ${PROJECT_SOURCE_DIR}/src/math
+    ${PROJECT_SOURCE_DIR}/src/objects
+    ${PROJECT_SOURCE_DIR}/src/raytracer
+    ${PROJECT_SOURCE_DIR}/src/rendering
+    ${PROJECT_SOURCE_DIR}/src/scene
+    ${PROJECT_SOURCE_DIR}/src/utils
 )
 
 # Compiler flags
@@ -81,7 +99,7 @@ add_custom_target(run
     USES_TERMINAL
 )
 
-# Wasm build and run target
+# WebAssembly build and run target
 if(EMSCRIPTEN)
     add_custom_target(run-wasm
         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${PROJECT_NAME} -- -j 8
@@ -92,3 +110,4 @@ if(EMSCRIPTEN)
         USES_TERMINAL
     )
 endif()
+
