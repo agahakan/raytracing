@@ -55,10 +55,6 @@ double ComputeLighting(const Vec3 &P, const Vec3 &N, const Vec3 &V, const Scene 
 
 Color TraceRay(const Ray &ray, double t_min, double t_max, const Scene &scene, int depth)
 {
-    if (depth > 3) {
-        return Color(0, 0, 0);
-    }
-
     double closest_t = INF;
     const Object *closest_object = nullptr;
 
