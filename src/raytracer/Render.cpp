@@ -1,8 +1,6 @@
 #include "Render.hpp"
 #include <algorithm>
 
-const double INF = std::numeric_limits<double>::infinity();
-
 Vec3 Reflect(const Vec3 &I, const Vec3 &N)
 {
     return N * (2.0 * dot(N, I)) - I;
